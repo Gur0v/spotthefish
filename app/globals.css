@@ -1,0 +1,66 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --blue-primary: #1D9BF0;
+  --blue-dark: #0B75C9;
+  --blue-light: #E8F5FF;
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --background: #F7FBFF;
+  --card: #FFFFFF;
+  --text-main: #172033;
+  --text-muted: #64748B;
+  --border: #D7E7F5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 1024px;
+  min-height: 700px;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(29, 155, 240, 0.10), transparent 30%),
+    linear-gradient(180deg, #f7fbff 0%, #eef8ff 100%);
+  color: var(--text-main);
+  font-family: Nunito, Inter, system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+button,
+a,
+[role="button"] {
+  @apply outline-none focus-visible:ring-4 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-fish-background;
+}
+
+.large-text {
+  font-size: 1.08rem;
+}
+
+.fish-card {
+  @apply rounded-[28px] border border-fish-border bg-white shadow-soft;
+}
+
+.chunky-button {
+  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-6 py-3 font-extrabold transition;
+}
+
+.chunky-primary {
+  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-fish-primary px-6 py-3 font-extrabold text-white shadow-button transition hover:-translate-y-0.5 hover:bg-fish-dark active:translate-y-1 active:shadow-none;
+}
+
+.chunky-secondary {
+  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border-2 border-fish-border bg-white px-6 py-3 font-extrabold text-fish-text transition hover:-translate-y-0.5 hover:border-fish-primary hover:text-fish-dark;
+}
+
+.desktop-wrap {
+  @apply mx-auto w-full max-w-[1180px] px-6;
+}
