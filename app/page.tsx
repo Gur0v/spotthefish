@@ -48,6 +48,14 @@ export default function HomePage() {
           </div>
           <p className="mt-7 max-w-xl rounded-3xl border border-fish-border bg-white px-5 py-4 text-base font-bold text-fish-muted">
             Без реєстрації. Без збору особистих даних. Прогрес зберігається тільки у вашому браузері.
+            <a
+              href="https://github.com/Gur0v/spotthefish"
+              target="_blank"
+              rel="noreferrer"
+              className="ml-1 text-fish-dark underline decoration-fish-primary/40 underline-offset-4 hover:text-fish-primary"
+            >
+              Код сайту відкритий.
+            </a>
           </p>
         </div>
         <LessonPreview />
