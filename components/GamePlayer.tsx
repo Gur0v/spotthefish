@@ -103,7 +103,7 @@ export function GamePlayer({ lesson }: { lesson: Lesson }) {
           <QuestionView question={question} selected={selected} onChoose={choose} locked={Boolean(feedback)} />
 
           {feedback ? (
-            <div className={`mt-auto rounded-[24px] border-2 p-5 ${feedback.correct ? "border-fish-success bg-green-50" : "border-fish-warning bg-amber-50"}`} role="status">
+            <div className={`mt-6 rounded-[24px] border-2 p-5 ${feedback.correct ? "border-fish-success bg-green-50" : "border-fish-warning bg-amber-50"}`} role="status">
               <div className={`flex items-center gap-2 text-xl font-extrabold ${feedback.correct ? "text-green-700" : "text-amber-700"}`}>
                 {feedback.correct ? <CheckCircle2 aria-hidden /> : <CircleAlert aria-hidden />}
                 {feedback.correct ? "Правильно." : "Не зовсім."}
@@ -113,7 +113,7 @@ export function GamePlayer({ lesson }: { lesson: Lesson }) {
             </div>
           ) : null}
 
-          <div className="mt-6 flex justify-end gap-3">
+          <div className="mt-5 flex justify-end gap-3">
             {feedback ? (
               <button onClick={next} className="chunky-primary text-lg">Продовжити</button>
             ) : (
