@@ -5,7 +5,7 @@ import { Check, Lock, PlayCircle } from "lucide-react";
 import { allLessons, lessonModules } from "@/lib/lessons";
 import { useProgress } from "@/components/ProgressProvider";
 import { Stars } from "@/components/Stars";
-import { Lesson } from "@/lib/types";
+import { LessonMeta } from "@/lib/types";
 
 export default function LearnPage() {
   const { progress } = useProgress();
@@ -59,7 +59,7 @@ export default function LearnPage() {
   );
 }
 
-function LessonCard({ lesson }: { lesson: Lesson }) {
+function LessonCard({ lesson }: { lesson: LessonMeta }) {
   const { progress } = useProgress();
   const completed = progress.completedLessons.includes(lesson.id);
   const unlocked = progress.unlockedLessons.includes(lesson.id);
@@ -68,7 +68,7 @@ function LessonCard({ lesson }: { lesson: Lesson }) {
 
   const content = (
     <article
-      className={`flex min-h-[112px] flex-col rounded-2xl border-2 bg-white p-4 transition sm:min-h-[210px] sm:rounded-[26px] sm:p-5 lg:min-h-[245px] ${
+      className={`flex h-full min-h-[112px] flex-col rounded-2xl border-2 bg-white p-4 transition sm:min-h-[270px] sm:rounded-[26px] sm:p-5 lg:min-h-[292px] ${
         completed
           ? "border-fish-success"
           : current
@@ -78,23 +78,28 @@ function LessonCard({ lesson }: { lesson: Lesson }) {
               : "border-slate-200 bg-slate-50 opacity-75"
       }`}
     >
-      <div className="mb-3 flex items-start justify-between gap-3 sm:mb-4">
+      <div className="mb-3 grid grid-cols-[3rem_1fr_6rem] items-center gap-3 sm:mb-4">
         <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-xl font-extrabold text-white ${completed ? "bg-fish-success" : unlocked ? "bg-fish-primary" : "bg-slate-300"}`}>
-          {completed ? <Check size={25} aria-label="Пройдено" /> : unlocked ? lesson.order : <Lock size={23} aria-label="Закрито" />}
+          {completed ? <Check size={25} aria-label="Пройдено" /> : lesson.order}
         </div>
-        {completed ? (
-          <Stars count={score?.stars ?? 0} />
-        ) : current ? (
-          <span className="rounded-full bg-fish-light px-3 py-1 text-sm font-extrabold text-fish-dark">Поточний</span>
-        ) : null}
+        <div className="flex justify-center">
+          {!unlocked ? <Lock size={23} aria-label="Закрито" className="text-fish-muted" /> : null}
+        </div>
+        <div className="flex justify-end">
+          {completed ? (
+            <Stars count={score?.stars ?? 0} />
+          ) : current ? (
+            <span className="rounded-full bg-fish-light px-3 py-1 text-sm font-extrabold text-fish-dark">Поточний</span>
+          ) : null}
+        </div>
       </div>
 
       <div className="mb-3 inline-flex w-fit rounded-full bg-fish-light px-3 py-1 text-sm font-extrabold text-fish-dark">
         {lesson.category}
       </div>
       <h3 className="text-lg font-extrabold leading-tight text-fish-text sm:text-xl">{lesson.title}</h3>
-      <p className="mt-2 flex-1 text-sm font-semibold leading-relaxed text-fish-muted">{lesson.description}</p>
-      <div className="mt-4 flex items-center gap-2 font-extrabold text-fish-dark">
+      <p className="mt-2 text-sm font-semibold leading-relaxed text-fish-muted">{lesson.description}</p>
+      <div className="mt-auto flex items-center gap-2 pt-4 font-extrabold text-fish-dark">
         {unlocked ? <PlayCircle size={18} aria-hidden /> : <Lock size={18} aria-hidden />}
         {completed ? "Повторити урок" : unlocked ? "Відкрити урок" : "Закрито"}
       </div>
@@ -102,7 +107,7 @@ function LessonCard({ lesson }: { lesson: Lesson }) {
   );
 
   return unlocked ? (
-    <Link href={`/lesson/${lesson.id}`} aria-label={`Відкрити урок ${lesson.title}`}>
+    <Link href={`/lesson/${lesson.id}`} aria-label={`Відкрити урок ${lesson.title}`} className="block h-full">
       {content}
     </Link>
   ) : (

@@ -11,6 +11,7 @@ export const defaultProgress: UserProgress = {
   streak: 0,
   language: "uk",
   textSize: "normal",
+  theme: "light",
   soundEnabled: true,
 };
 
@@ -70,6 +71,7 @@ export function mergeProgress(local: UserProgress, remote: Partial<UserProgress>
     streak: Math.max(local.streak, remote.streak ?? 0),
     language: local.language ?? remote.language ?? "uk",
     textSize: local.textSize ?? remote.textSize ?? "normal",
+    theme: local.theme ?? remote.theme ?? "light",
     soundEnabled: typeof local.soundEnabled === "boolean" ? local.soundEnabled : remote.soundEnabled ?? true,
   };
 }

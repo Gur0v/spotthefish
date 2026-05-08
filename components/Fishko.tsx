@@ -32,17 +32,27 @@ export const fishkoVariants = [
   fishko12,
 ];
 
-export function Fishko({ className = "", image = fishkoImage }: { className?: string; image?: StaticImageData }) {
+export function Fishko({
+  className = "",
+  image = fishkoImage,
+  priority = false,
+}: {
+  className?: string;
+  image?: StaticImageData;
+  priority?: boolean;
+}) {
   return (
     <div className={`mx-auto flex h-32 w-32 items-center justify-center overflow-visible sm:h-44 sm:w-44 lg:h-72 lg:w-72 ${className}`} aria-label="Фішко, синя рибка-детектив">
       <Image
         src={image}
         alt="Фішко, синя рибка-детектив з лупою"
-        width={240}
-        height={240}
-        sizes="(max-width: 640px) 128px, (max-width: 1024px) 176px, 240px"
+        width={800}
+        height={800}
+        sizes="(max-width: 640px) 180px, (max-width: 1024px) 240px, 360px"
+        quality={100}
+        unoptimized
         className="h-full w-full scale-[1.2] object-contain drop-shadow-[0_18px_26px_rgba(29,155,240,0.18)]"
-        priority
+        priority={priority}
       />
     </div>
   );
@@ -57,6 +67,8 @@ export function BrandLogo({ compact = false }: { compact?: boolean }) {
           alt="Spot the Fish"
           fill
           sizes="48px"
+          quality={100}
+          unoptimized
           className="object-contain drop-shadow-[0_4px_0_rgba(11,117,201,0.25)]"
         />
       </div>
@@ -69,9 +81,10 @@ export function BrandLogo({ compact = false }: { compact?: boolean }) {
         src={logoImage}
         alt="Spot the Fish"
         fill
-        sizes="430px"
+        sizes="360px"
+        quality={100}
+        unoptimized
         className="object-contain"
-        priority
       />
     </div>
   );

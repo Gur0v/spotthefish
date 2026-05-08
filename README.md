@@ -45,6 +45,8 @@ By default, progress is saved only in the browser via `localStorage`.
 
 Optional sync uses a 16-digit numeric access code. It does not use Supabase Auth, email, usernames, or passwords. Supabase is used only as Postgres storage through server-only route handlers.
 
+Access-code sync is optional. If enabled, users can create a 16-digit access code to sync progress across devices. The code is shown once. It cannot be recovered because the app stores only hashes, not the raw code. Logged-in users can regenerate a new code; the old code stops working and progress stays on the same account.
+
 Stored sync data is limited to progress and settings:
 
 - completed and unlocked lessons
@@ -102,7 +104,7 @@ Run this against a started server with sync env vars configured:
 bun run smoke:access http://localhost:3000
 ```
 
-It tests create, session check, save progress, load progress, logout, login, reload progress, and delete access account.
+It tests create, session check, save progress, load progress, regenerate, old-code rejection, logout, login, reload progress, and delete access account.
 
 ## Local Network
 

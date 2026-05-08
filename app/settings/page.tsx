@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle2, Cloud, Copy, LogOut, Trash2, RotateCcw, Volume2 } from "lucide-react";
+import { AlertTriangle, Check, CheckCircle2, Cloud, Copy, Download, KeyRound, LogOut, Moon, Sun, Trash2, RotateCcw, Volume2 } from "lucide-react";
 import { allLessons } from "@/lib/lessons";
 import { mergeProgress } from "@/lib/progress";
 import { useProgress } from "@/components/ProgressProvider";
@@ -12,18 +12,30 @@ export default function SettingsPage() {
   const [showUnlockWindow, setShowUnlockWindow] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] = useState(false);
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
   const [accessCode, setAccessCode] = useState("");
+  const [accessCodeSaved, setAccessCodeSaved] = useState(false);
+  const [accessCodeMode, setAccessCodeMode] = useState<"created" | "regenerated">("created");
   const [codeInput, setCodeInput] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
+  const [syncAvailable, setSyncAvailable] = useState(true);
   const [syncMessage, setSyncMessage] = useState("");
   const [syncError, setSyncError] = useState("");
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const normalizedCodeInput = codeInput.replace(/\D/g, "");
+  const codeInputError = codeInput && normalizedCodeInput.length !== 16 ? "Код має містити 16 цифр" : "";
 
   useEffect(() => {
     fetch("/api/access/me")
       .then((response) => response.json())
-      .then((data: { loggedIn?: boolean }) => setLoggedIn(Boolean(data.loggedIn)))
-      .catch(() => setLoggedIn(false));
+      .then((data: { loggedIn?: boolean; syncAvailable?: boolean }) => {
+        setLoggedIn(Boolean(data.loggedIn));
+        setSyncAvailable(data.syncAvailable !== false);
+      })
+      .catch(() => {
+        setLoggedIn(false);
+        setSyncAvailable(false);
+      });
   }, []);
 
   function handleUkrainianClick() {
@@ -69,6 +81,8 @@ export default function SettingsPage() {
       if (!response.ok) throw new Error(await readApiError(response, "Не вдалося створити код доступу"));
       const data = (await response.json()) as { accessCode: string };
       setAccessCode(data.accessCode);
+      setAccessCodeMode("created");
+      setAccessCodeSaved(false);
       setLoggedIn(true);
       notifyAutoSync(true);
       setSyncMessage("Код створено. Збережіть його в безпечному місці.");
@@ -85,6 +99,7 @@ export default function SettingsPage() {
       if (!response.ok) throw new Error(await readApiError(response, "Неправильний код доступу"));
       setLoggedIn(true);
       setAccessCode("");
+      setAccessCodeSaved(false);
       notifyAutoSync(true);
       setSyncMessage("Вхід за кодом виконано. Тепер можна синхронізувати прогрес.");
     });
@@ -136,6 +151,7 @@ export default function SettingsPage() {
       if (!response.ok) throw new Error("Не вдалося вийти з коду доступу");
       setLoggedIn(false);
       setAccessCode("");
+      setAccessCodeSaved(false);
       setCodeInput("");
       notifyAutoSync(false);
       setSyncMessage("Синхронізацію вимкнено на цьому пристрої.");
@@ -148,11 +164,50 @@ export default function SettingsPage() {
       if (!response.ok) throw new Error(await readApiError(response, "Не вдалося видалити код доступу"));
       setLoggedIn(false);
       setAccessCode("");
+      setAccessCodeSaved(false);
       setCodeInput("");
       setShowDeleteAccountConfirm(false);
       notifyAutoSync(false);
       setSyncMessage("Код доступу видалено. Локальний прогрес у цьому браузері залишився.");
     });
+  }
+
+  async function regenerateAccessCode() {
+    await runAccessAction("regenerate", async () => {
+      const response = await fetch("/api/access/regenerate", { method: "POST" });
+      if (!response.ok) throw new Error(await readApiError(response, "Не вдалося створити новий код доступу"));
+      const data = (await response.json()) as { accessCode: string };
+      setAccessCode(data.accessCode);
+      setAccessCodeMode("regenerated");
+      setAccessCodeSaved(false);
+      setShowRegenerateConfirm(false);
+      setSyncMessage("Новий код доступу створено. Збережіть його зараз.");
+    });
+  }
+
+  function downloadAccessCodeTxt() {
+    if (!accessCode) return;
+
+    const contents = [
+      "Spot the Fish - код доступу",
+      "",
+      accessCode,
+      "",
+      "Збережіть цей код у безпечному місці.",
+      "Він потрібен, щоб синхронізувати прогрес між пристроями.",
+      "Spot the Fish не зможе показати цей код ще раз.",
+      "Якщо ви втратите код доступу, відновити цей акаунт буде неможливо.",
+      "",
+    ].join("\n");
+    const url = URL.createObjectURL(new Blob([contents], { type: "text/plain;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "spot-the-fish-access-code.txt";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setSyncMessage("TXT з кодом завантажено.");
   }
 
   return (
@@ -166,7 +221,13 @@ export default function SettingsPage() {
           <SettingBlock title="Мова">
             <div className="flex flex-col gap-3 sm:flex-row">
               <button onClick={handleUkrainianClick} className="chunky-primary w-full sm:w-auto">Українська</button>
-              <button className="chunky-secondary w-full opacity-70 sm:w-auto" disabled>English</button>
+              <button
+                className="chunky-secondary w-full cursor-not-allowed opacity-60 sm:w-auto"
+                disabled
+                title="English is unavailable at the moment, please use Google Translate."
+              >
+                English
+              </button>
             </div>
           </SettingBlock>
 
@@ -176,7 +237,13 @@ export default function SettingsPage() {
                 Синхронізуйте прогрес між пристроями без пошти, імені чи пароля.
               </p>
 
-              {!loggedIn ? (
+              {!syncAvailable ? (
+                <div className="rounded-2xl border border-fish-border bg-slate-50 p-4 font-extrabold text-fish-muted sm:rounded-3xl">
+                  Синхронізація недоступна в цій збірці.
+                </div>
+              ) : null}
+
+              {syncAvailable && !loggedIn ? (
                 <div className="space-y-4">
                   <button onClick={createAccessCode} disabled={Boolean(loadingAction)} className="chunky-primary w-full disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none sm:w-auto">
                     <Cloud size={21} aria-hidden />
@@ -196,20 +263,44 @@ export default function SettingsPage() {
                         placeholder="1234 5678 9012 3456"
                         className="min-h-12 min-w-0 flex-1 rounded-2xl border-2 border-fish-border bg-white px-4 text-lg font-bold text-fish-text outline-none focus:border-fish-primary focus:ring-4 focus:ring-blue-100"
                       />
-                      <button onClick={loginWithCode} disabled={Boolean(loadingAction)} className="chunky-secondary w-full disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">
+                      <button onClick={loginWithCode} disabled={Boolean(loadingAction) || Boolean(codeInputError)} className="chunky-secondary w-full disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">
                         Увійти за кодом
                       </button>
                     </div>
+                    {codeInputError ? <p className="mt-2 font-bold text-fish-danger">{codeInputError}</p> : null}
                   </div>
                 </div>
               ) : null}
 
-              {accessCode ? (
+              {syncAvailable && accessCode ? (
                 <div className="rounded-2xl border-2 border-fish-primary bg-fish-light p-4 sm:rounded-3xl sm:p-5">
-                  <p className="font-extrabold text-fish-dark">Збережіть цей код. Ми не зможемо показати його ще раз.</p>
-                  <div className="mt-3 break-all rounded-2xl bg-white px-4 py-4 font-mono text-xl font-bold tracking-wide text-fish-text sm:px-5 sm:text-2xl">
-                    {accessCode}
+                  <p className="font-extrabold text-fish-dark">
+                    {accessCodeMode === "regenerated"
+                      ? "Новий код доступу створено. Збережіть його зараз. Ми не зможемо показати його ще раз."
+                      : "Збережіть цей код. Ми не зможемо показати його ще раз."}
+                  </p>
+                  <div className="mt-3 flex min-h-[64px] items-center justify-center rounded-2xl bg-white px-4 font-sans text-2xl font-extrabold leading-none tracking-[0.16em] text-fish-text sm:px-5">
+                    <span className="translate-y-px">{accessCode}</span>
                   </div>
+                  <div className="mt-4 rounded-2xl border border-fish-warning bg-amber-50 p-4 font-bold leading-relaxed text-fish-text">
+                    <div className="mb-2 flex items-center gap-2 font-extrabold text-fish-warning">
+                      <AlertTriangle size={20} aria-hidden />
+                      Важливо
+                    </div>
+                    Якщо ви втратите код доступу, відновити цей акаунт буде неможливо. Це пов’язано з тим, як сайт зберігає дані: код не зберігається у відкритому вигляді, а лише перевіряється через захищені хеші.
+                  </div>
+                  <label className="mt-4 flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl bg-white px-4 py-3 font-extrabold text-fish-text ring-1 ring-fish-border">
+                    <input
+                      type="checkbox"
+                      checked={accessCodeSaved}
+                      onChange={(event) => setAccessCodeSaved(event.target.checked)}
+                      className="peer sr-only"
+                    />
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-xl border-2 border-fish-border bg-fish-card text-transparent transition peer-checked:border-fish-primary peer-checked:bg-fish-primary peer-checked:text-white">
+                      <Check size={19} strokeWidth={3.2} aria-hidden />
+                    </span>
+                    Я зберіг/зберегла код доступу
+                  </label>
                   <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                     <button
                       onClick={() => {
@@ -221,16 +312,23 @@ export default function SettingsPage() {
                       <Copy size={20} aria-hidden />
                       Скопіювати код
                     </button>
-                    <button onClick={saveProgressToCode} disabled={Boolean(loadingAction)} className="chunky-primary w-full disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none sm:w-auto">
+                    <button onClick={downloadAccessCodeTxt} className="chunky-secondary w-full sm:w-auto">
+                      <Download size={20} aria-hidden />
+                      Завантажити TXT
+                    </button>
+                    <button onClick={saveProgressToCode} disabled={Boolean(loadingAction) || !accessCodeSaved} className="chunky-primary w-full disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none sm:w-auto">
                       Синхронізувати мій прогрес
                     </button>
                   </div>
                 </div>
               ) : null}
 
-              {loggedIn && !accessCode ? (
+              {syncAvailable && loggedIn && !accessCode ? (
                 <div className="rounded-2xl border border-fish-border bg-fish-light p-4 sm:rounded-3xl sm:p-5">
                   <p className="font-extrabold text-fish-dark">Синхронізацію увімкнено на цьому пристрої.</p>
+                  <p className="mt-2 font-bold leading-relaxed text-fish-muted">
+                    Ми не можемо відновити втрачений код, бо не зберігаємо його у відкритому вигляді.
+                  </p>
                   <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                     <button onClick={syncNow} disabled={Boolean(loadingAction)} className="chunky-primary w-full disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none sm:w-auto">
                       Синхронізувати зараз
@@ -240,6 +338,10 @@ export default function SettingsPage() {
                     </button>
                     <button onClick={saveProgressToCode} disabled={Boolean(loadingAction)} className="chunky-secondary w-full disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">
                       Зберегти цей прогрес у код
+                    </button>
+                    <button onClick={() => setShowRegenerateConfirm(true)} disabled={Boolean(loadingAction)} className="chunky-secondary w-full disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">
+                      <KeyRound size={20} aria-hidden />
+                      Згенерувати новий код доступу
                     </button>
                     <button onClick={logoutAccessCode} disabled={Boolean(loadingAction)} className="chunky-secondary w-full disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">
                       <LogOut size={20} aria-hidden />
@@ -276,15 +378,34 @@ export default function SettingsPage() {
             <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 onClick={() => setProgress({ ...progress, textSize: "normal" })}
-                className={progress.textSize === "normal" ? "chunky-primary" : "chunky-secondary"}
+                className={`${progress.textSize === "normal" ? "chunky-primary" : "chunky-secondary"} w-full sm:w-auto`}
               >
                 Звичайний
               </button>
               <button
                 onClick={() => setProgress({ ...progress, textSize: "large" })}
-                className={progress.textSize === "large" ? "chunky-primary" : "chunky-secondary"}
+                className={`${progress.textSize === "large" ? "chunky-primary" : "chunky-secondary"} w-full sm:w-auto`}
               >
                 Великий
+              </button>
+            </div>
+          </SettingBlock>
+
+          <SettingBlock title="Тема">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                onClick={() => setProgress({ ...progress, theme: "light" })}
+                className={`${progress.theme === "light" ? "chunky-primary" : "chunky-secondary"} w-full sm:w-auto`}
+              >
+                <Sun size={21} aria-hidden />
+                Світла
+              </button>
+              <button
+                onClick={() => setProgress({ ...progress, theme: "dark" })}
+                className={`${progress.theme === "dark" ? "chunky-primary" : "chunky-secondary"} w-full sm:w-auto`}
+              >
+                <Moon size={21} aria-hidden />
+                Темна
               </button>
             </div>
           </SettingBlock>
@@ -299,17 +420,20 @@ export default function SettingsPage() {
         <aside className="fish-card p-4 sm:p-6">
           <h2 className="text-2xl font-extrabold text-fish-text">Приватність</h2>
           <p className="mt-4 text-lg font-bold leading-relaxed text-fish-muted">
-            Тут немає пошти, імен, паролів, платежів або профілів. Код доступу приватний: він зберігає тільки ваш прогрес, зірки, серію, звук і розмір тексту. Без коду доступу все лишається тільки у localStorage вашого браузера.
+            Ми не просимо пошту, ім’я, пароль або оплату.
           </p>
           <p className="mt-4 text-lg font-bold leading-relaxed text-fish-muted">
-            Сайт не збирає особисту інформацію про вас. Якщо сумніваєтеся, можна перевірити це у{" "}
+            Без коду доступу прогрес зберігається тільки в цьому браузері. Якщо увімкнути код доступу, ми зберігаємо лише ваш прогрес і налаштування: зірки, серію, звук, розмір тексту і тему.
+          </p>
+          <p className="mt-4 text-lg font-bold leading-relaxed text-fish-muted">
+            Код не можна відновити, якщо ви його загубите. Ми не зберігаємо сам код. Відкритий код сайту можна подивитися{" "}
             <a
               href="https://github.com/Gur0v/spotthefish"
               target="_blank"
               rel="noreferrer"
               className="text-fish-dark underline decoration-fish-primary/40 underline-offset-4 hover:text-fish-primary"
             >
-              відкритому коді
+              тут
             </a>.
           </p>
           <div className="mt-6 rounded-3xl bg-fish-light p-5 font-extrabold text-fish-dark">
@@ -361,6 +485,37 @@ export default function SettingsPage() {
                 className="chunky-primary bg-fish-danger shadow-[0_5px_0_#B91C1C] hover:bg-red-600"
               >
                 Так, скинути
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showRegenerateConfirm ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-900/35 p-4 sm:p-8" role="dialog" aria-modal="true" aria-labelledby="regenerate-access-title">
+          <div className="fish-card max-h-[90vh] max-w-lg overflow-y-auto p-5 sm:p-7">
+            <div className="mb-5 grid h-16 w-16 place-items-center rounded-3xl bg-amber-50 text-fish-warning">
+              <KeyRound size={32} aria-hidden />
+            </div>
+            <h2 id="regenerate-access-title" className="text-2xl font-extrabold text-fish-text sm:text-3xl">
+              Згенерувати новий код?
+            </h2>
+            <p className="mt-3 text-base font-bold leading-relaxed text-fish-muted sm:text-lg">
+              Старий код перестане працювати. Новий код буде показано лише один раз. Продовжити?
+            </p>
+            <p className="mt-3 rounded-2xl bg-fish-light p-4 font-bold leading-relaxed text-fish-text">
+              Якщо ви втратите новий код доступу, відновити цей акаунт буде неможливо, бо код не зберігається у відкритому вигляді.
+            </p>
+            <div className="mt-7 flex flex-col justify-end gap-3 sm:flex-row">
+              <button onClick={() => setShowRegenerateConfirm(false)} className="chunky-secondary w-full sm:w-auto">
+                Скасувати
+              </button>
+              <button
+                onClick={regenerateAccessCode}
+                disabled={loadingAction === "regenerate"}
+                className="chunky-primary w-full disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none sm:w-auto"
+              >
+                Так, створити новий код
               </button>
             </div>
           </div>

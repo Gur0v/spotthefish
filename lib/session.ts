@@ -28,3 +28,11 @@ export async function getAccessSession() {
 
   return getIronSession<AccessSession>(await cookies(), sessionOptions);
 }
+
+export async function getAccessSessionOrNull(): Promise<AccessSession> {
+  try {
+    return await getAccessSession();
+  } catch {
+    return {};
+  }
+}

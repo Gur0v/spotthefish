@@ -5,14 +5,25 @@ import { notFound, useParams, useSearchParams } from "next/navigation";
 import { ArrowRight, RotateCcw } from "lucide-react";
 import { Fishko } from "@/components/Fishko";
 import { Stars } from "@/components/Stars";
-import { getLesson, getNextLessonId } from "@/lib/lessons";
+import { getLessonMeta, getNextLessonId } from "@/lib/lessons";
 import { getStars } from "@/lib/progress";
+import { useLesson } from "@/lib/useLesson";
 
 export default function CompletePage() {
   const params = useParams<{ lessonId: string }>();
   const search = useSearchParams();
-  const lesson = getLesson(params.lessonId);
-  if (!lesson) notFound();
+  const lessonMeta = getLessonMeta(params.lessonId);
+  const { lesson, loading } = useLesson(params.lessonId);
+  if (!lessonMeta) notFound();
+  if (loading || !lesson) {
+    return (
+      <div className="desktop-wrap">
+        <section className="fish-card p-4 sm:p-6 lg:p-8">
+          <p className="text-lg font-bold text-fish-muted">Завантажуємо результат...</p>
+        </section>
+      </div>
+    );
+  }
   const score = Number(search.get("score") ?? 0);
   const safeScore = Number.isFinite(score) ? score : 0;
   const total = lesson.questions.length;

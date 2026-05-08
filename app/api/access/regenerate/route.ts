@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { deleteAccessAccount, isAccessSyncConfigured } from "@/lib/accessAccount";
+import { isAccessSyncConfigured, regenerateAccessCode } from "@/lib/accessAccount";
 import { getAccessSession } from "@/lib/session";
 
 export const runtime = "nodejs";
@@ -15,12 +15,10 @@ export async function POST() {
       return NextResponse.json({ error: "Не виконано вхід" }, { status: 401 });
     }
 
-    await deleteAccessAccount(session.accountId);
-    session.destroy();
-
-    return NextResponse.json({ ok: true });
+    const accessCode = await regenerateAccessCode(session.accountId);
+    return NextResponse.json({ accessCode });
   } catch (error) {
-    console.error("Failed to delete access account.", error);
-    return NextResponse.json({ error: "Не вдалося видалити код доступу" }, { status: 500 });
+    console.error("Failed to regenerate access code.", error);
+    return NextResponse.json({ error: "Не вдалося створити новий код доступу" }, { status: 500 });
   }
 }

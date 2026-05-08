@@ -88,6 +88,26 @@ expect_status "$status" "200" "load progress"
 expect_body_contains '"totalStars":3' "loaded progress should match saved progress"
 echo "✓ load progress"
 
+status="$(request POST /api/access/regenerate)"
+expect_status "$status" "200" "regenerate access code"
+new_access_code="$(sed -n 's/.*"accessCode":"\([^"]*\)".*/\1/p' "$BODY_FILE")"
+if [[ ! "$new_access_code" =~ ^[0-9]{4}\ [0-9]{4}\ [0-9]{4}\ [0-9]{4}$ ]]; then
+  echo "✗ regenerate response did not include a formatted access code"
+  cat "$BODY_FILE"
+  echo
+  exit 1
+fi
+if [[ "$new_access_code" == "$access_code" ]]; then
+  echo "✗ regenerated code matched the old code"
+  exit 1
+fi
+echo "✓ regenerate access code ($(mask_code "$new_access_code"))"
+
+status="$(request GET /api/progress)"
+expect_status "$status" "200" "load progress after regeneration"
+expect_body_contains '"totalStars":3' "progress should remain after regeneration"
+echo "✓ progress remains after regeneration"
+
 status="$(request POST /api/access/logout)"
 expect_status "$status" "200" "logout"
 expect_body_contains '"ok":true' "logout should return ok"
@@ -103,9 +123,13 @@ expect_status "$status" "400" "invalid short code"
 echo "✓ invalid short code is rejected"
 
 status="$(request POST /api/access/login "{\"code\":\"$access_code\"}")"
-expect_status "$status" "200" "login with created code"
+expect_status "$status" "401" "old code after regeneration"
+echo "✓ old code is rejected after regeneration"
+
+status="$(request POST /api/access/login "{\"code\":\"$new_access_code\"}")"
+expect_status "$status" "200" "login with regenerated code"
 expect_body_contains '"ok":true' "login should return ok"
-echo "✓ login with created code"
+echo "✓ login with regenerated code"
 
 status="$(request GET /api/progress)"
 expect_status "$status" "200" "load progress after login"

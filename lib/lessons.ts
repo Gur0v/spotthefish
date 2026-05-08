@@ -1,7 +1,7 @@
-import lessons from "@/data/lessons.json";
-import { Lesson } from "./types";
+import lessonMeta from "@/data/lessonMeta.json";
+import { LessonMeta } from "./types";
 
-export const allLessons = [...(lessons as Lesson[])].sort((a, b) => a.order - b.order);
+export const allLessons = [...(lessonMeta as LessonMeta[])].sort((a, b) => a.order - b.order);
 
 export const lessonModules = [
   { id: "messages", title: "Підозрілі повідомлення" },
@@ -10,12 +10,12 @@ export const lessonModules = [
   { id: "safe-actions", title: "Безпечні дії" },
 ];
 
-export function getLesson(lessonId: string) {
+export function getLessonMeta(lessonId: string) {
   return allLessons.find((lesson) => lesson.id === lessonId) ?? null;
 }
 
 export function getNextLessonId(lessonId: string) {
-  const current = getLesson(lessonId);
+  const current = getLessonMeta(lessonId);
   if (!current) return null;
   return allLessons.find((lesson) => lesson.order === current.order + 1)?.id ?? null;
 }

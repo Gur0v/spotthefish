@@ -10,17 +10,17 @@ const config: Config = {
     extend: {
       colors: {
         fish: {
-          primary: "#1D9BF0",
-          dark: "#0B75C9",
-          light: "#E8F5FF",
-          success: "#22C55E",
-          warning: "#F59E0B",
-          danger: "#EF4444",
-          background: "#F7FBFF",
-          card: "#FFFFFF",
-          text: "#172033",
-          muted: "#64748B",
-          border: "#D7E7F5",
+          primary: "var(--blue-primary)",
+          dark: "var(--blue-dark)",
+          light: "var(--blue-light)",
+          success: "var(--success)",
+          warning: "var(--warning)",
+          danger: "var(--danger)",
+          background: "var(--background)",
+          card: "var(--card)",
+          text: "var(--text-main)",
+          muted: "var(--text-muted)",
+          border: "var(--border)",
         },
       },
       fontFamily: {

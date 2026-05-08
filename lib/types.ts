@@ -1,4 +1,5 @@
 export type TextSize = "normal" | "large";
+export type ThemeMode = "light" | "dark";
 
 export type UserProgress = {
   completedLessons: string[];
@@ -17,6 +18,7 @@ export type UserProgress = {
   streak: number;
   language: "uk" | "en";
   textSize: TextSize;
+  theme: ThemeMode;
   soundEnabled: boolean;
 };
 
@@ -32,6 +34,8 @@ export type Lesson = {
   tip: string;
   questions: GameQuestion[];
 };
+
+export type LessonMeta = Omit<Lesson, "questions">;
 
 export type SpotRedFlagsGame = {
   id: string;

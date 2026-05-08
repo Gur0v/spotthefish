@@ -24,5 +24,7 @@ export function createLookupHash(code: string): string {
     throw new Error("Missing required environment variable: ACCOUNT_LOOKUP_SECRET");
   }
 
+  // HMAC is only a stable lookup key for finding the account row.
+  // It is not the raw access code and cannot be used to show the code again.
   return createHmac("sha256", secret).update(normalizeAccessCode(code)).digest("hex");
 }

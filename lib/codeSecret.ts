@@ -12,6 +12,7 @@ const PBKDF2_DIGEST = "sha256";
 export async function hashAccessCodeSecret(code: string): Promise<string> {
   const argon2 = await loadArgon2();
   if (argon2) {
+    // Argon2id is one-way: the original access code cannot be recovered from this hash.
     return argon2.hash(code, { algorithm: 2 });
   }
 
@@ -26,6 +27,7 @@ export async function hashAccessCodeSecret(code: string): Promise<string> {
 }
 
 export async function verifyAccessCodeSecret(storedHash: string, code: string): Promise<boolean> {
+  // Existing accounts keep working: Argon2id hashes and the PBKDF2 fallback format are both verified.
   if (storedHash.startsWith(`${PBKDF2_PREFIX}$`)) {
     return verifyPbkdf2Hash(storedHash, code);
   }

@@ -3,15 +3,28 @@
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
 import { ArrowRight, CheckCircle2, Lock } from "lucide-react";
-import { getLesson } from "@/lib/lessons";
+import { getLessonMeta } from "@/lib/lessons";
+import { useLesson } from "@/lib/useLesson";
 import { useProgress } from "@/components/ProgressProvider";
 import { MascotPanel } from "@/components/Fishko";
 
 export default function LessonIntroPage() {
   const params = useParams<{ lessonId: string }>();
-  const lesson = getLesson(params.lessonId);
+  const lessonMeta = getLessonMeta(params.lessonId);
+  const { lesson, loading } = useLesson(params.lessonId);
   const { progress } = useProgress();
-  if (!lesson) notFound();
+  if (!lessonMeta) notFound();
+  if (loading || !lesson) {
+    return (
+      <div className="desktop-wrap">
+        <section className="fish-card p-4 sm:p-6 lg:p-8">
+          <p className="font-extrabold text-fish-dark">Урок {lessonMeta.order}</p>
+          <h1 className="mt-2 text-3xl font-extrabold text-fish-text sm:text-5xl">{lessonMeta.title}</h1>
+          <p className="mt-4 text-lg font-bold text-fish-muted">Завантажуємо урок...</p>
+        </section>
+      </div>
+    );
+  }
 
   const unlocked = progress.unlockedLessons.includes(lesson.id);
 

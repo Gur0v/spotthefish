@@ -14,6 +14,7 @@ type ProgressContextValue = {
 };
 
 const ProgressContext = createContext<ProgressContextValue | null>(null);
+const SYNC_STATUS_KEY = "spot-the-fish-sync-status";
 
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
@@ -46,6 +47,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         loggedIn = false;
       }
 
+      window.sessionStorage.setItem(SYNC_STATUS_KEY, loggedIn ? "logged-in" : "logged-out");
       setSyncLoggedIn(loggedIn);
       setProgressState(nextProgress);
       progressRef.current = nextProgress;
@@ -53,7 +55,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       setReady(true);
       syncReadyRef.current = true;
       lastSyncedProgressRef.current = loggedIn ? "" : JSON.stringify(nextProgress);
-      document.body.classList.toggle("large-text", nextProgress.textSize === "large");
+      applyBodyPreferences(nextProgress);
     }
 
     loadProgress();
@@ -62,6 +64,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     function handleSyncSession(event: Event) {
       const loggedIn = Boolean((event as CustomEvent<{ loggedIn?: boolean }>).detail?.loggedIn);
+      window.sessionStorage.setItem(SYNC_STATUS_KEY, loggedIn ? "logged-in" : "logged-out");
       setSyncLoggedIn(loggedIn);
       if (loggedIn) {
         syncReadyRef.current = true;
@@ -97,7 +100,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       } catch {
         // Keep localStorage as the source of truth if background sync is unavailable.
       }
-    }, 700);
+    }, 1800);
 
     return () => window.clearTimeout(timeout);
   }, [progress, ready, syncLoggedIn]);
@@ -106,7 +109,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     setProgressState(next);
     progressRef.current = next;
     writeProgress(next);
-    document.body.classList.toggle("large-text", next.textSize === "large");
+    applyBodyPreferences(next);
   };
 
   const value = useMemo(
@@ -121,7 +124,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         const next = resetProgress();
         setProgressState(next);
         progressRef.current = next;
-        document.body.classList.remove("large-text");
+        applyBodyPreferences(next);
       },
     }),
     [progress, ready],
@@ -138,11 +141,16 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       setProgressState(merged);
       progressRef.current = merged;
       writeProgress(merged);
-      document.body.classList.toggle("large-text", merged.textSize === "large");
+      applyBodyPreferences(merged);
     } catch {
       // Local progress remains available even if remote sync is temporarily unavailable.
     }
   }
+}
+
+function applyBodyPreferences(progress: UserProgress) {
+  document.body.classList.toggle("large-text", progress.textSize === "large");
+  document.body.classList.toggle("dark-theme", progress.theme === "dark");
 }
 
 export function useProgress() {
