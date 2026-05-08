@@ -117,7 +117,7 @@ export function GamePlayer({ lesson }: { lesson: Lesson }) {
             {feedback ? (
               <button onClick={next} className="chunky-primary w-full text-lg sm:w-auto">Продовжити</button>
             ) : (
-              <button onClick={check} disabled={selected.length === 0} className="chunky-primary w-full text-lg disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none sm:w-auto">
+              <button onClick={check} disabled={selected.length === 0} className="game-check-button chunky-primary w-full text-lg disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none sm:w-auto">
                 Перевірити
               </button>
             )}
@@ -146,7 +146,7 @@ export function GamePlayer({ lesson }: { lesson: Lesson }) {
 function QuestionView({ question, selected, onChoose, locked }: { question: GameQuestion; selected: string[]; onChoose: (id: string) => void; locked: boolean }) {
   if (question.type === "spot-red-flags") {
     return (
-      <div className="rounded-2xl bg-slate-50 p-4 text-lg font-extrabold leading-[2.1] text-fish-text sm:rounded-[26px] sm:p-7 sm:text-2xl sm:leading-[1.8]">
+      <div className="flex flex-wrap gap-2 rounded-2xl bg-slate-50 p-4 text-lg font-extrabold leading-relaxed text-fish-text sm:rounded-[26px] sm:p-7 sm:text-2xl">
         {question.messageParts.map((part) => {
           const isSelected = selected.includes(part.id);
           const revealed = locked && part.isFlag;
@@ -156,8 +156,8 @@ function QuestionView({ question, selected, onChoose, locked }: { question: Game
               key={part.id}
               type="button"
               onClick={() => onChoose(part.id)}
-              className={`mx-1 my-1 rounded-xl px-3 py-2 text-left transition sm:px-2 sm:py-1 lg:hover:bg-fish-light ${
-                revealed ? "bg-green-100 text-green-800 ring-2 ring-fish-success" : wrong ? "bg-red-100 text-red-800 ring-2 ring-fish-danger" : isSelected ? "bg-fish-light text-fish-dark ring-2 ring-fish-primary" : ""
+              className={`inline-flex min-h-11 items-center rounded-xl border-2 border-transparent px-3 py-2 text-left transition sm:min-h-10 sm:px-3 sm:py-1.5 lg:hover:bg-fish-light ${
+                revealed ? "border-fish-success bg-green-100 text-green-800" : wrong ? "border-fish-danger bg-red-100 text-red-800" : isSelected ? "selected-clue border-fish-primary bg-fish-light text-fish-dark" : ""
               }`}
             >
               {revealed ? <CircleCheck className="mr-1 inline" size={18} aria-label="Правильний сигнал" /> : wrong ? <XCircle className="mr-1 inline" size={18} aria-label="Не сигнал" /> : null}
@@ -200,13 +200,19 @@ function OptionCard({ id, label, text, selected, correct, wrong, onChoose, monos
     <button
       type="button"
       onClick={() => onChoose(id)}
-      className={`min-h-24 rounded-2xl border-2 bg-white p-4 text-left transition sm:min-h-36 sm:rounded-[24px] sm:p-5 lg:hover:-translate-y-0.5 lg:hover:shadow-soft ${
-        correct ? "border-fish-success bg-green-50" : wrong ? "border-fish-danger bg-red-50" : selected ? "border-fish-primary bg-fish-light" : "border-fish-border"
+      className={`answer-option min-h-24 rounded-2xl border-2 bg-white p-4 text-left transition sm:min-h-36 sm:rounded-[24px] sm:p-5 lg:hover:-translate-y-0.5 lg:hover:shadow-soft ${
+        correct ? "answer-option-correct border-fish-success bg-green-50" : wrong ? "answer-option-wrong border-fish-danger bg-red-50" : selected ? "answer-option-selected border-fish-primary bg-fish-light" : "border-fish-border"
       }`}
     >
       <div className="mb-3 flex items-center justify-between">
         <span className="font-extrabold text-fish-dark">{label}</span>
-        {correct ? <CircleCheck className="text-fish-success" aria-label="Правильна відповідь" /> : wrong ? <XCircle className="text-fish-danger" aria-label="Невдала відповідь" /> : null}
+        {correct ? (
+          <CircleCheck className="text-fish-success" aria-label="Правильна відповідь" />
+        ) : wrong ? (
+          <XCircle className="text-fish-danger" aria-label="Невдала відповідь" />
+        ) : selected ? (
+          <CircleCheck className="text-fish-primary" aria-label="Обрано" />
+        ) : null}
       </div>
       <p className={`${monospace ? "break-all font-mono text-sm sm:text-base" : "text-base font-bold sm:text-lg"} leading-relaxed text-fish-text`}>{text}</p>
     </button>

@@ -9,6 +9,9 @@ import { LessonMeta } from "@/lib/types";
 
 export default function LearnPage() {
   const { progress } = useProgress();
+  const currentLessonId =
+    allLessons.find((lesson) => progress.unlockedLessons.includes(lesson.id) && !progress.completedLessons.includes(lesson.id))?.id ??
+    allLessons[0]?.id;
 
   return (
     <div className="desktop-wrap">
@@ -48,7 +51,7 @@ export default function LearnPage() {
 
               <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:gap-4 sm:p-5 lg:grid-cols-4 lg:gap-5 lg:p-6">
                 {lessons.map((lesson) => (
-                  <LessonCard key={lesson.id} lesson={lesson} />
+                  <LessonCard key={lesson.id} lesson={lesson} currentLessonId={currentLessonId} />
                 ))}
               </div>
             </section>
@@ -59,11 +62,11 @@ export default function LearnPage() {
   );
 }
 
-function LessonCard({ lesson }: { lesson: LessonMeta }) {
+function LessonCard({ lesson, currentLessonId }: { lesson: LessonMeta; currentLessonId?: string }) {
   const { progress } = useProgress();
   const completed = progress.completedLessons.includes(lesson.id);
   const unlocked = progress.unlockedLessons.includes(lesson.id);
-  const current = unlocked && !completed;
+  const current = unlocked && !completed && lesson.id === currentLessonId;
   const score = progress.lessonScores[lesson.id];
 
   const content = (
@@ -79,20 +82,25 @@ function LessonCard({ lesson }: { lesson: LessonMeta }) {
       }`}
     >
       <div className="mb-3 grid grid-cols-[3rem_1fr_6rem] items-center gap-3 sm:mb-4">
-        <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-xl font-extrabold text-white ${completed ? "bg-fish-success" : unlocked ? "bg-fish-primary" : "bg-slate-300"}`}>
+        <div className={`lesson-number grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-xl font-extrabold text-white ${completed ? "bg-fish-success" : unlocked ? "bg-fish-primary" : "bg-slate-300"}`}>
           {completed ? <Check size={25} aria-label="Пройдено" /> : lesson.order}
         </div>
-        <div className="flex justify-center">
-          {!unlocked ? <Lock size={23} aria-label="Закрито" className="text-fish-muted" /> : null}
-        </div>
+        <div />
         <div className="flex justify-end">
           {completed ? (
-            <Stars count={score?.stars ?? 0} />
+            <span className="completed-status rounded-full bg-green-100 px-3 py-1 text-sm font-extrabold text-green-700">Пройдено</span>
           ) : current ? (
             <span className="rounded-full bg-fish-light px-3 py-1 text-sm font-extrabold text-fish-dark">Поточний</span>
+          ) : unlocked ? (
+            <span className="rounded-full bg-fish-light px-3 py-1 text-sm font-extrabold text-fish-dark">Відкрито</span>
           ) : null}
         </div>
       </div>
+      {completed ? (
+        <div className="mb-3">
+          <Stars count={score?.stars ?? 0} />
+        </div>
+      ) : null}
 
       <div className="mb-3 inline-flex w-fit rounded-full bg-fish-light px-3 py-1 text-sm font-extrabold text-fish-dark">
         {lesson.category}

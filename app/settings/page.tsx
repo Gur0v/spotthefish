@@ -482,7 +482,7 @@ export default function SettingsPage() {
                   reset();
                   setShowResetConfirm(false);
                 }}
-                className="chunky-primary bg-fish-danger shadow-[0_5px_0_#B91C1C] hover:bg-red-600"
+                className="destructive-button chunky-primary bg-fish-danger shadow-[0_5px_0_#B91C1C] hover:bg-red-600"
               >
                 Так, скинути
               </button>
@@ -541,7 +541,7 @@ export default function SettingsPage() {
               <button
                 onClick={deleteAccessAccount}
                 disabled={loadingAction === "delete"}
-                className="chunky-primary bg-fish-danger shadow-[0_5px_0_#B91C1C] hover:bg-red-600 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+                className="destructive-button chunky-primary bg-fish-danger shadow-[0_5px_0_#B91C1C] hover:bg-red-600 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
               >
                 Так, видалити
               </button>
