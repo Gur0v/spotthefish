@@ -1,6 +1,6 @@
-import { verify } from "@node-rs/argon2";
 import { NextResponse } from "next/server";
 import { createLookupHash, normalizeAccessCode } from "@/lib/accessCode";
+import { verifyAccessCodeSecret } from "@/lib/codeSecret";
 import { getAccessSession } from "@/lib/session";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Неправильний код доступу" }, { status: 401 });
     }
 
-    const valid = await verify(account.code_secret_hash, code);
+    const valid = await verifyAccessCodeSecret(account.code_secret_hash, code);
     if (!valid) {
       return NextResponse.json({ error: "Неправильний код доступу" }, { status: 401 });
     }
@@ -43,7 +43,8 @@ export async function POST(request: Request) {
     await session.save();
 
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (error) {
+    console.error("Failed to log in with access code.", error);
     return NextResponse.json({ error: "Неправильний код доступу" }, { status: 401 });
   }
 }

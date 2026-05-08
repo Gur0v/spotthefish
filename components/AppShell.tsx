@@ -46,10 +46,7 @@ function NavInner({ children }: { children: React.ReactNode }) {
               <Star size={20} className="fill-fish-warning text-fish-warning" aria-hidden />
               {progress.totalStars}
             </div>
-            <Link href="/settings" className="grid h-10 w-10 place-items-center rounded-2xl bg-white text-fish-text ring-1 ring-fish-border lg:hidden" aria-label="Settings">
-              <Settings size={20} aria-hidden />
-            </Link>
-            <div className="hidden items-center gap-2 rounded-2xl bg-white px-4 py-2 text-fish-text ring-1 ring-fish-border lg:flex">
+            <div className="flex items-center gap-1.5 rounded-2xl bg-white px-3 py-2 text-fish-text ring-1 ring-fish-border lg:gap-2 lg:px-4">
               <Flame size={20} className="text-fish-warning" aria-hidden />
               {progress.streak}
             </div>

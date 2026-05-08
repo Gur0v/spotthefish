@@ -47,7 +47,7 @@ export default function HomePage() {
             </Link>
           </div>
           <p className="mt-5 max-w-none rounded-2xl border border-fish-border bg-white px-4 py-3 text-sm font-bold text-fish-muted sm:text-base lg:mt-7 lg:max-w-xl lg:rounded-3xl lg:px-5 lg:py-4">
-            Без реєстрації. Без збору особистих даних. Прогрес зберігається тільки у вашому браузері.
+            Без пошти, паролів і збору особистих даних. Прогрес зберігається у браузері або у приватному коді доступу, якщо ви самі ввімкнете синхронізацію.
             <a
               href="https://github.com/Gur0v/spotthefish"
               target="_blank"

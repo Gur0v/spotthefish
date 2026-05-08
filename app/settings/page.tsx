@@ -299,10 +299,21 @@ export default function SettingsPage() {
         <aside className="fish-card p-4 sm:p-6">
           <h2 className="text-2xl font-extrabold text-fish-text">Приватність</h2>
           <p className="mt-4 text-lg font-bold leading-relaxed text-fish-muted">
-            Тут немає акаунтів, платежів, профілів і збору особистих даних. Прогрес, зірки, серія, звук і розмір тексту зберігаються тільки у localStorage вашого браузера.
+            Тут немає пошти, імен, паролів, платежів або профілів. Код доступу приватний: він зберігає тільки ваш прогрес, зірки, серію, звук і розмір тексту. Без коду доступу все лишається тільки у localStorage вашого браузера.
+          </p>
+          <p className="mt-4 text-lg font-bold leading-relaxed text-fish-muted">
+            Сайт не збирає особисту інформацію про вас. Якщо сумніваєтеся, можна перевірити це у{" "}
+            <a
+              href="https://github.com/Gur0v/spotthefish"
+              target="_blank"
+              rel="noreferrer"
+              className="text-fish-dark underline decoration-fish-primary/40 underline-offset-4 hover:text-fish-primary"
+            >
+              відкритому коді
+            </a>.
           </p>
           <div className="mt-6 rounded-3xl bg-fish-light p-5 font-extrabold text-fish-dark">
-            Якщо скинути прогрес або очистити дані браузера, уроки почнуться спочатку.
+            Якщо скинути локальний прогрес або очистити дані браузера, уроки на цьому пристрої почнуться спочатку. Прогрес у коді доступу можна видалити окремо.
           </div>
         </aside>
       </section>
