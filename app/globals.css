@@ -24,8 +24,9 @@
 
 body {
   margin: 0;
-  min-width: 1024px;
-  min-height: 700px;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at 12% 8%, rgba(29, 155, 240, 0.10), transparent 30%),
     linear-gradient(180deg, #f7fbff 0%, #eef8ff 100%);
@@ -46,7 +47,7 @@ a,
 }
 
 .fish-card {
-  @apply rounded-[28px] border border-fish-border bg-white shadow-soft;
+  @apply rounded-2xl border border-fish-border bg-white shadow-soft sm:rounded-[28px];
 }
 
 .chunky-button {
@@ -54,13 +55,13 @@ a,
 }
 
 .chunky-primary {
-  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-fish-primary px-6 py-3 font-extrabold text-white shadow-button transition hover:-translate-y-0.5 hover:bg-fish-dark active:translate-y-1 active:shadow-none;
+  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-fish-primary px-5 py-3 font-extrabold text-white shadow-button transition hover:bg-fish-dark active:translate-y-1 active:shadow-none sm:hover:-translate-y-0.5 sm:px-6;
 }
 
 .chunky-secondary {
-  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border-2 border-fish-border bg-white px-6 py-3 font-extrabold text-fish-text transition hover:-translate-y-0.5 hover:border-fish-primary hover:text-fish-dark;
+  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border-2 border-fish-border bg-white px-5 py-3 font-extrabold text-fish-text transition hover:border-fish-primary hover:text-fish-dark sm:hover:-translate-y-0.5 sm:px-6;
 }
 
 .desktop-wrap {
-  @apply mx-auto w-full max-w-[1180px] px-6;
+  @apply mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8;
 }

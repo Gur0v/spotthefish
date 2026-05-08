@@ -9,10 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@node-rs/argon2": "^2.0.2",
+    "@supabase/supabase-js": "^2.105.3",
+    "iron-session": "^8.0.4",
+    "lucide-react": "latest",
     "next": "latest",
     "react": "latest",
-    "react-dom": "latest",
-    "lucide-react": "latest"
+    "react-dom": "latest"
   },
   "devDependencies": {
     "@types/node": "latest",

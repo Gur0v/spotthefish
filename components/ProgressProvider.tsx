@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { allLessons, getNextLessonId } from "@/lib/lessons";
-import { defaultProgress, readProgress, resetProgress, writeProgress } from "@/lib/progress";
+import { defaultProgress, mergeProgress, readProgress, resetProgress, writeProgress } from "@/lib/progress";
 import { UserProgress } from "@/lib/types";
 
 type ProgressContextValue = {
@@ -18,24 +18,93 @@ const ProgressContext = createContext<ProgressContextValue | null>(null);
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [progress, setProgressState] = useState<UserProgress>(defaultProgress);
+  const [syncLoggedIn, setSyncLoggedIn] = useState(false);
+  const syncReadyRef = useRef(false);
+  const lastSyncedProgressRef = useRef("");
+  const progressRef = useRef<UserProgress>(defaultProgress);
 
   useEffect(() => {
-    const loaded = readProgress();
-    const unlockedLessons = new Set(loaded.unlockedLessons.length ? loaded.unlockedLessons : ["urgent"]);
-    unlockedLessons.add(allLessons[0]?.id ?? "urgent");
-    loaded.completedLessons.forEach((lessonId) => {
-      const nextLessonId = getNextLessonId(lessonId);
-      if (nextLessonId) unlockedLessons.add(nextLessonId);
-    });
-    const normalized = { ...loaded, unlockedLessons: Array.from(unlockedLessons) };
-    setProgressState(normalized);
-    writeProgress(normalized);
-    setReady(true);
-    document.body.classList.toggle("large-text", normalized.textSize === "large");
+    async function loadProgress() {
+      const loaded = readProgress();
+      const normalized = normalizeUnlockedLessons(loaded);
+      let nextProgress = normalized;
+      let loggedIn = false;
+
+      try {
+        const meResponse = await fetch("/api/access/me", { cache: "no-store" });
+        const me = (await meResponse.json()) as { loggedIn?: boolean };
+        loggedIn = Boolean(me.loggedIn);
+
+        if (loggedIn) {
+          const progressResponse = await fetch("/api/progress", { cache: "no-store" });
+          if (progressResponse.ok) {
+            const data = (await progressResponse.json()) as { progress?: Partial<UserProgress> };
+            nextProgress = normalizeUnlockedLessons(mergeProgress(normalized, data.progress));
+          }
+        }
+      } catch {
+        loggedIn = false;
+      }
+
+      setSyncLoggedIn(loggedIn);
+      setProgressState(nextProgress);
+      progressRef.current = nextProgress;
+      writeProgress(nextProgress);
+      setReady(true);
+      syncReadyRef.current = true;
+      lastSyncedProgressRef.current = loggedIn ? "" : JSON.stringify(nextProgress);
+      document.body.classList.toggle("large-text", nextProgress.textSize === "large");
+    }
+
+    loadProgress();
   }, []);
+
+  useEffect(() => {
+    function handleSyncSession(event: Event) {
+      const loggedIn = Boolean((event as CustomEvent<{ loggedIn?: boolean }>).detail?.loggedIn);
+      setSyncLoggedIn(loggedIn);
+      if (loggedIn) {
+        syncReadyRef.current = true;
+        lastSyncedProgressRef.current = "";
+        mergeRemoteProgressIntoLocal();
+      }
+    }
+
+    window.addEventListener("spot-the-fish-sync-session", handleSyncSession);
+    return () => window.removeEventListener("spot-the-fish-sync-session", handleSyncSession);
+  }, []);
+
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
+
+  useEffect(() => {
+    if (!ready || !syncLoggedIn || !syncReadyRef.current) return;
+
+    const serialized = JSON.stringify(progress);
+    if (serialized === lastSyncedProgressRef.current) return;
+
+    const timeout = window.setTimeout(async () => {
+      try {
+        const response = await fetch("/api/progress", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ progress }),
+        });
+        if (response.ok) {
+          lastSyncedProgressRef.current = serialized;
+        }
+      } catch {
+        // Keep localStorage as the source of truth if background sync is unavailable.
+      }
+    }, 700);
+
+    return () => window.clearTimeout(timeout);
+  }, [progress, ready, syncLoggedIn]);
 
   const setProgress = (next: UserProgress) => {
     setProgressState(next);
+    progressRef.current = next;
     writeProgress(next);
     document.body.classList.toggle("large-text", next.textSize === "large");
   };
@@ -51,6 +120,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       reset: () => {
         const next = resetProgress();
         setProgressState(next);
+        progressRef.current = next;
         document.body.classList.remove("large-text");
       },
     }),
@@ -58,10 +128,36 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   );
 
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;
+
+  async function mergeRemoteProgressIntoLocal() {
+    try {
+      const response = await fetch("/api/progress", { cache: "no-store" });
+      if (!response.ok) return;
+      const data = (await response.json()) as { progress?: Partial<UserProgress> };
+      const merged = normalizeUnlockedLessons(mergeProgress(progressRef.current, data.progress));
+      setProgressState(merged);
+      progressRef.current = merged;
+      writeProgress(merged);
+      document.body.classList.toggle("large-text", merged.textSize === "large");
+    } catch {
+      // Local progress remains available even if remote sync is temporarily unavailable.
+    }
+  }
 }
 
 export function useProgress() {
   const value = useContext(ProgressContext);
   if (!value) throw new Error("useProgress must be used inside ProgressProvider");
   return value;
+}
+
+function normalizeUnlockedLessons(progress: UserProgress): UserProgress {
+  const unlockedLessons = new Set(progress.unlockedLessons.length ? progress.unlockedLessons : ["urgent"]);
+  unlockedLessons.add(allLessons[0]?.id ?? "urgent");
+  progress.completedLessons.forEach((lessonId) => {
+    const nextLessonId = getNextLessonId(lessonId);
+    if (nextLessonId) unlockedLessons.add(nextLessonId);
+  });
+
+  return { ...progress, unlockedLessons: Array.from(unlockedLessons) };
 }

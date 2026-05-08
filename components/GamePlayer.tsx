@@ -85,17 +85,17 @@ export function GamePlayer({ lesson }: { lesson: Lesson }) {
 
   return (
     <div className="desktop-wrap">
-      <div className="mb-6 grid grid-cols-[1fr_180px] items-end gap-6">
+      <div className="mb-4 grid grid-cols-1 items-end gap-2 lg:mb-6 lg:grid-cols-[1fr_180px] lg:gap-6">
         <div>
           <p className="font-extrabold text-fish-dark">{lesson.title}</p>
-          <h1 className="text-4xl font-extrabold text-fish-text">Питання {index + 1} / {total}</h1>
+          <h1 className="text-3xl font-extrabold text-fish-text lg:text-4xl">Питання {index + 1} / {total}</h1>
         </div>
-        <div className="text-right text-2xl font-extrabold text-fish-text">{correctCount} правильних</div>
+        <div className="text-left text-lg font-extrabold text-fish-text lg:text-right lg:text-2xl">{correctCount} правильних</div>
       </div>
       <ProgressBar current={index + (feedback ? 1 : 0)} total={total} />
 
-      <div className="mt-7 grid grid-cols-[1fr_360px] gap-8">
-        <section className="fish-card flex min-h-[480px] flex-col p-7">
+      <div className="mt-5 grid grid-cols-1 gap-5 lg:mt-7 lg:grid-cols-[1fr_360px] lg:gap-8">
+        <section className="fish-card flex flex-col p-4 sm:p-6 lg:min-h-[480px] lg:p-7">
           <div className="mb-5 flex items-center gap-2 font-extrabold text-fish-dark">
             <MousePointerClick size={22} aria-hidden />
             {question.type === "safe-action" ? question.question : question.prompt}
@@ -103,29 +103,29 @@ export function GamePlayer({ lesson }: { lesson: Lesson }) {
           <QuestionView question={question} selected={selected} onChoose={choose} locked={Boolean(feedback)} />
 
           {feedback ? (
-            <div className={`mt-6 rounded-[24px] border-2 p-5 ${feedback.correct ? "border-fish-success bg-green-50" : "border-fish-warning bg-amber-50"}`} role="status">
+            <div className={`mt-5 rounded-2xl border-2 p-4 sm:mt-6 sm:rounded-[24px] sm:p-5 ${feedback.correct ? "border-fish-success bg-green-50" : "border-fish-warning bg-amber-50"}`} role="status">
               <div className={`flex items-center gap-2 text-xl font-extrabold ${feedback.correct ? "text-green-700" : "text-amber-700"}`}>
                 {feedback.correct ? <CheckCircle2 aria-hidden /> : <CircleAlert aria-hidden />}
                 {feedback.correct ? "Правильно." : "Не зовсім."}
               </div>
-              <p className="mt-2 text-lg font-bold leading-relaxed text-fish-text">{feedback.text}</p>
+              <p className="mt-2 text-base font-bold leading-relaxed text-fish-text sm:text-lg">{feedback.text}</p>
               <p className="mt-3 rounded-2xl bg-white p-3 font-extrabold text-fish-dark">{feedback.rule}</p>
             </div>
           ) : null}
 
           <div className="mt-5 flex justify-end gap-3">
             {feedback ? (
-              <button onClick={next} className="chunky-primary text-lg">Продовжити</button>
+              <button onClick={next} className="chunky-primary w-full text-lg sm:w-auto">Продовжити</button>
             ) : (
-              <button onClick={check} disabled={selected.length === 0} className="chunky-primary text-lg disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none">
+              <button onClick={check} disabled={selected.length === 0} className="chunky-primary w-full text-lg disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none sm:w-auto">
                 Перевірити
               </button>
             )}
           </div>
         </section>
-        <aside className="space-y-5">
+        <aside className="space-y-4 lg:space-y-5">
           <MascotPanel tip={lesson.tip} title="Правило уроку" image={mascotImages[index]} />
-          <div className="fish-card p-5">
+          <div className="fish-card p-4 sm:p-5">
             <h2 className="font-extrabold text-fish-text">Обрані підказки</h2>
             {selectedClues.length ? (
               <ul className="mt-3 space-y-2">
@@ -146,7 +146,7 @@ export function GamePlayer({ lesson }: { lesson: Lesson }) {
 function QuestionView({ question, selected, onChoose, locked }: { question: GameQuestion; selected: string[]; onChoose: (id: string) => void; locked: boolean }) {
   if (question.type === "spot-red-flags") {
     return (
-      <div className="rounded-[26px] bg-slate-50 p-7 text-2xl font-extrabold leading-[1.8] text-fish-text">
+      <div className="rounded-2xl bg-slate-50 p-4 text-lg font-extrabold leading-[2.1] text-fish-text sm:rounded-[26px] sm:p-7 sm:text-2xl sm:leading-[1.8]">
         {question.messageParts.map((part) => {
           const isSelected = selected.includes(part.id);
           const revealed = locked && part.isFlag;
@@ -156,7 +156,7 @@ function QuestionView({ question, selected, onChoose, locked }: { question: Game
               key={part.id}
               type="button"
               onClick={() => onChoose(part.id)}
-              className={`mx-1 my-1 rounded-xl px-2 py-1 text-left transition hover:bg-fish-light ${
+              className={`mx-1 my-1 rounded-xl px-3 py-2 text-left transition sm:px-2 sm:py-1 lg:hover:bg-fish-light ${
                 revealed ? "bg-green-100 text-green-800 ring-2 ring-fish-success" : wrong ? "bg-red-100 text-red-800 ring-2 ring-fish-danger" : isSelected ? "bg-fish-light text-fish-dark ring-2 ring-fish-primary" : ""
               }`}
             >
@@ -171,7 +171,7 @@ function QuestionView({ question, selected, onChoose, locked }: { question: Game
 
   if (question.type === "real-or-fake") {
     return (
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
         {question.options.map((option) => <OptionCard key={option.id} id={option.id} label={option.label} text={option.content} selected={selected.includes(option.id)} correct={locked && option.id === question.correctOptionId} wrong={locked && selected.includes(option.id) && option.id !== question.correctOptionId} onChoose={onChoose} />)}
       </div>
     );
@@ -180,8 +180,8 @@ function QuestionView({ question, selected, onChoose, locked }: { question: Game
   if (question.type === "safe-action") {
     return (
       <div>
-        <div className="mb-5 rounded-[24px] bg-slate-50 p-5 text-xl font-bold leading-relaxed text-fish-text">{question.scenario}</div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="mb-4 rounded-2xl bg-slate-50 p-4 text-base font-bold leading-relaxed text-fish-text sm:mb-5 sm:rounded-[24px] sm:p-5 sm:text-xl">{question.scenario}</div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
           {question.options.map((option) => <OptionCard key={option.id} id={option.id} label="" text={option.text} selected={selected.includes(option.id)} correct={locked && option.id === question.correctOptionId} wrong={locked && selected.includes(option.id) && option.id !== question.correctOptionId} onChoose={onChoose} />)}
         </div>
       </div>
@@ -189,7 +189,7 @@ function QuestionView({ question, selected, onChoose, locked }: { question: Game
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
       {question.urls.map((url) => <OptionCard key={url.id} id={url.id} label="URL" text={url.text} selected={selected.includes(url.id)} correct={locked && url.id === question.correctUrlId} wrong={locked && selected.includes(url.id) && url.id !== question.correctUrlId} onChoose={onChoose} monospace />)}
     </div>
   );
@@ -200,7 +200,7 @@ function OptionCard({ id, label, text, selected, correct, wrong, onChoose, monos
     <button
       type="button"
       onClick={() => onChoose(id)}
-      className={`min-h-36 rounded-[24px] border-2 bg-white p-5 text-left transition hover:-translate-y-0.5 hover:shadow-soft ${
+      className={`min-h-24 rounded-2xl border-2 bg-white p-4 text-left transition sm:min-h-36 sm:rounded-[24px] sm:p-5 lg:hover:-translate-y-0.5 lg:hover:shadow-soft ${
         correct ? "border-fish-success bg-green-50" : wrong ? "border-fish-danger bg-red-50" : selected ? "border-fish-primary bg-fish-light" : "border-fish-border"
       }`}
     >
@@ -208,7 +208,7 @@ function OptionCard({ id, label, text, selected, correct, wrong, onChoose, monos
         <span className="font-extrabold text-fish-dark">{label}</span>
         {correct ? <CircleCheck className="text-fish-success" aria-label="Правильна відповідь" /> : wrong ? <XCircle className="text-fish-danger" aria-label="Невдала відповідь" /> : null}
       </div>
-      <p className={`${monospace ? "font-mono text-base" : "text-lg font-bold"} leading-relaxed text-fish-text`}>{text}</p>
+      <p className={`${monospace ? "break-all font-mono text-sm sm:text-base" : "text-base font-bold sm:text-lg"} leading-relaxed text-fish-text`}>{text}</p>
     </button>
   );
 }

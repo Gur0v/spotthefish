@@ -42,6 +42,38 @@ export function resetProgress() {
   return defaultProgress;
 }
 
+export function mergeProgress(local: UserProgress, remote: Partial<UserProgress> | null | undefined): UserProgress {
+  if (!remote || typeof remote !== "object") return local;
+
+  const lessonScores = { ...local.lessonScores };
+  for (const [lessonId, remoteScore] of Object.entries(remote.lessonScores ?? {})) {
+    const localScore = lessonScores[lessonId];
+    const remoteCorrect = remoteScore?.correct ?? 0;
+    const localCorrect = localScore?.correct ?? 0;
+    const remoteStars = remoteScore?.stars ?? 0;
+    const localStars = localScore?.stars ?? 0;
+
+    if (!localScore || remoteStars > localStars || (remoteStars === localStars && remoteCorrect > localCorrect)) {
+      lessonScores[lessonId] = remoteScore;
+    }
+  }
+
+  const totalStars = Object.values(lessonScores).reduce((sum, score) => sum + score.stars, 0);
+
+  return {
+    ...local,
+    completedLessons: Array.from(new Set([...local.completedLessons, ...(remote.completedLessons ?? [])])),
+    unlockedLessons: Array.from(new Set([...local.unlockedLessons, ...(remote.unlockedLessons ?? [])])),
+    lessonScores,
+    totalStars: Math.max(local.totalStars, remote.totalStars ?? 0, totalStars),
+    lastPlayedAt: local.lastPlayedAt ?? remote.lastPlayedAt ?? null,
+    streak: Math.max(local.streak, remote.streak ?? 0),
+    language: local.language ?? remote.language ?? "uk",
+    textSize: local.textSize ?? remote.textSize ?? "normal",
+    soundEnabled: typeof local.soundEnabled === "boolean" ? local.soundEnabled : remote.soundEnabled ?? true,
+  };
+}
+
 function dateKey(value: Date) {
   return value.toISOString().slice(0, 10);
 }

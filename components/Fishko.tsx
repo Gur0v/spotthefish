@@ -34,13 +34,13 @@ export const fishkoVariants = [
 
 export function Fishko({ className = "", image = fishkoImage }: { className?: string; image?: StaticImageData }) {
   return (
-    <div className={`mx-auto flex h-72 w-72 items-center justify-center overflow-visible ${className}`} aria-label="Фішко, синя рибка-детектив">
+    <div className={`mx-auto flex h-32 w-32 items-center justify-center overflow-visible sm:h-44 sm:w-44 lg:h-72 lg:w-72 ${className}`} aria-label="Фішко, синя рибка-детектив">
       <Image
         src={image}
         alt="Фішко, синя рибка-детектив з лупою"
         width={240}
         height={240}
-        sizes="240px"
+        sizes="(max-width: 640px) 128px, (max-width: 1024px) 176px, 240px"
         className="h-full w-full scale-[1.2] object-contain drop-shadow-[0_18px_26px_rgba(29,155,240,0.18)]"
         priority
       />
@@ -51,7 +51,7 @@ export function Fishko({ className = "", image = fishkoImage }: { className?: st
 export function BrandLogo({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
-      <div className="relative h-12 w-12">
+      <div className="relative h-10 w-10 shrink-0 lg:h-12 lg:w-12">
         <Image
           src={fishkoSmallImage}
           alt="Spot the Fish"
@@ -79,9 +79,9 @@ export function BrandLogo({ compact = false }: { compact?: boolean }) {
 
 export function MascotPanel({ tip, title = "Підказка Фішка", image }: { tip: string; title?: string; image?: StaticImageData }) {
   return (
-    <aside className="fish-card p-6">
+    <aside className="fish-card p-4 sm:p-6">
       <Fishko image={image} />
-      <div className="mt-2 rounded-3xl bg-fish-light p-5">
+      <div className="mt-2 rounded-2xl bg-fish-light p-4 sm:rounded-3xl sm:p-5">
         <div className="mb-2 flex items-center gap-2 font-extrabold text-fish-dark">
           <BadgeCheck size={20} aria-hidden />
           {title}

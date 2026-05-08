@@ -6,7 +6,9 @@ Desktop-only Ukrainian anti-phishing learning game.
 
 Built with Next.js, React, TypeScript, Tailwind CSS, static JSON lesson data, and `localStorage` progress.
 
-No accounts. No backend. No payments. No leaderboards. No personal data collection.
+No email accounts. No passwords. No payments. No leaderboards. No personal data collection.
+
+By default, the app works fully locally through `localStorage`. Optional Supabase-backed access-code sync can be enabled with environment variables.
 
 ## What it does
 
@@ -26,6 +28,7 @@ The mascot is **Фішко**, a blue fish detective.
 - safety tips library
 - local settings page
 - local-only progress saving
+- optional 16-digit access-code progress sync
 - randomized Fishko mascot variants
 - Ukrainian educational copy
 
@@ -70,7 +73,7 @@ Covered topics include:
 
 ## Progress
 
-Progress is stored only in `localStorage`.
+Progress is stored in `localStorage` by default.
 
 Tracked data includes:
 
@@ -90,6 +93,19 @@ Settings include a reset confirmation.
 
 There is also a hidden easter egg: clicking `Українська` 20 times unlocks all lessons.
 
+Optional sync uses a 16-digit numeric access code. It does not use Supabase Auth, email, usernames, or passwords. Supabase is used only as Postgres storage through server-only route handlers.
+
+To enable sync, provide:
+
+```text
+NEXT_PUBLIC_SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+ACCOUNT_LOOKUP_SECRET=
+SESSION_PASSWORD=
+```
+
+These are needed only for access-code sync. The game still works without them in localStorage-only mode. Never commit `.env.local` or real secrets.
+
 ## Tech stack
 
 - Next.js
@@ -98,6 +114,7 @@ There is also a hidden easter egg: clicking `Українська` 20 times unlo
 - Tailwind CSS
 - Bun
 - localStorage
+- optional Supabase Postgres sync
 
 ## Run locally
 
@@ -156,9 +173,11 @@ This project was developed with agentic coding tools. Expect bugs, rough edges, 
 
 ## Privacy
 
-There are no user accounts and no server-side user storage.
+There are no email/password user accounts.
 
 Progress is saved in the browser through `localStorage`. Clearing browser/site data removes progress.
+
+If optional access-code sync is configured, progress can also be saved to Supabase under a random 16-digit code. Raw access codes are not stored.
 
 ## License
 

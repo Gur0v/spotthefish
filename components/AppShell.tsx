@@ -18,12 +18,12 @@ function NavInner({ children }: { children: React.ReactNode }) {
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-fish-border/80 bg-fish-background/90 backdrop-blur">
-        <nav className="desktop-wrap flex h-[76px] items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 font-extrabold text-2xl text-fish-text">
+        <nav className="desktop-wrap flex h-16 items-center justify-between lg:h-[76px]">
+          <Link href="/" className="flex min-w-0 items-center gap-2 font-extrabold text-xl text-fish-text lg:gap-3 lg:text-2xl">
             <BrandLogo compact />
-            Spot the Fish
+            <span className="truncate">Spot the Fish</span>
           </Link>
-          <div className="flex items-center gap-2 rounded-3xl border border-fish-border bg-white p-2">
+          <div className="hidden items-center gap-2 rounded-3xl border border-fish-border bg-white p-2 lg:flex">
             {links.map((item) => {
               const Icon = item.icon;
               const active = pathname.startsWith(item.href);
@@ -41,19 +41,42 @@ function NavInner({ children }: { children: React.ReactNode }) {
               );
             })}
           </div>
-          <div className="flex items-center gap-3 font-extrabold">
-            <div className="flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-fish-text ring-1 ring-fish-border">
+          <div className="flex items-center gap-2 font-extrabold lg:gap-3">
+            <div className="flex items-center gap-1.5 rounded-2xl bg-white px-3 py-2 text-fish-text ring-1 ring-fish-border lg:gap-2 lg:px-4">
               <Star size={20} className="fill-fish-warning text-fish-warning" aria-hidden />
               {progress.totalStars}
             </div>
-            <div className="flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-fish-text ring-1 ring-fish-border">
+            <Link href="/settings" className="grid h-10 w-10 place-items-center rounded-2xl bg-white text-fish-text ring-1 ring-fish-border lg:hidden" aria-label="Settings">
+              <Settings size={20} aria-hidden />
+            </Link>
+            <div className="hidden items-center gap-2 rounded-2xl bg-white px-4 py-2 text-fish-text ring-1 ring-fish-border lg:flex">
               <Flame size={20} className="text-fish-warning" aria-hidden />
               {progress.streak}
             </div>
           </div>
         </nav>
       </header>
-      <main className="pb-12 pt-8">{children}</main>
+      <main className="pb-28 pt-5 lg:pb-12 lg:pt-8">{children}</main>
+      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-fish-border bg-white/95 px-3 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 shadow-[0_-12px_35px_rgba(29,155,240,0.12)] backdrop-blur lg:hidden">
+        <div className="mx-auto grid max-w-md grid-cols-3 gap-2">
+          {links.map((item) => {
+            const Icon = item.icon;
+            const active = pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-xs font-extrabold ${
+                  active ? "bg-fish-light text-fish-dark" : "text-fish-muted"
+                }`}
+              >
+                <Icon size={21} aria-hidden />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
     </>
   );
 }

@@ -12,12 +12,12 @@ export default function LearnPage() {
 
   return (
     <div className="desktop-wrap">
-      <div className="mb-7 flex items-end justify-between">
+      <div className="mb-5 flex flex-col gap-3 sm:mb-7 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-extrabold text-fish-dark">Карта уроків</p>
-          <h1 className="text-5xl font-extrabold text-fish-text">Навчальний маршрут Фішка</h1>
+          <h1 className="text-3xl font-extrabold text-fish-text sm:text-5xl">Навчальний маршрут Фішка</h1>
         </div>
-        <div className="rounded-3xl border border-fish-border bg-white px-6 py-4 font-extrabold text-fish-muted">
+        <div className="w-fit rounded-2xl border border-fish-border bg-white px-4 py-3 font-extrabold text-fish-muted sm:rounded-3xl sm:px-6 sm:py-4">
           Пройдено: {progress.completedLessons.length} / {allLessons.length}
         </div>
       </div>
@@ -31,22 +31,22 @@ export default function LearnPage() {
 
           return (
             <section key={module.id} className="fish-card overflow-hidden">
-              <div className="flex items-center justify-between border-b border-fish-border bg-fish-light px-7 py-5">
-                <div className="flex items-center gap-4">
-                  <div className="grid h-14 w-14 place-items-center rounded-2xl bg-fish-primary text-xl font-extrabold text-white shadow-button">
+              <div className="flex flex-col gap-3 border-b border-fish-border bg-fish-light px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7 sm:py-5">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-fish-primary text-lg font-extrabold text-white shadow-button sm:h-14 sm:w-14 sm:text-xl">
                     {moduleIndex + 1}
                   </div>
                   <div>
                     <p className="font-extrabold text-fish-dark">Модуль {moduleIndex + 1}</p>
-                    <h2 className="text-3xl font-extrabold text-fish-text">{module.title}</h2>
+                    <h2 className="text-2xl font-extrabold text-fish-text sm:text-3xl">{module.title}</h2>
                   </div>
                 </div>
-                <div className="rounded-2xl bg-white px-5 py-3 font-extrabold text-fish-muted ring-1 ring-fish-border">
+                <div className="w-fit rounded-2xl bg-white px-4 py-2 font-extrabold text-fish-muted ring-1 ring-fish-border sm:px-5 sm:py-3">
                   {completedCount} / {lessons.length} уроків
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-5 p-6">
+              <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:gap-4 sm:p-5 lg:grid-cols-4 lg:gap-5 lg:p-6">
                 {lessons.map((lesson) => (
                   <LessonCard key={lesson.id} lesson={lesson} />
                 ))}
@@ -68,7 +68,7 @@ function LessonCard({ lesson }: { lesson: Lesson }) {
 
   const content = (
     <article
-      className={`flex min-h-[245px] flex-col rounded-[26px] border-2 bg-white p-5 transition ${
+      className={`flex min-h-[112px] flex-col rounded-2xl border-2 bg-white p-4 transition sm:min-h-[210px] sm:rounded-[26px] sm:p-5 lg:min-h-[245px] ${
         completed
           ? "border-fish-success"
           : current
@@ -78,7 +78,7 @@ function LessonCard({ lesson }: { lesson: Lesson }) {
               : "border-slate-200 bg-slate-50 opacity-75"
       }`}
     >
-      <div className="mb-4 flex items-start justify-between gap-3">
+      <div className="mb-3 flex items-start justify-between gap-3 sm:mb-4">
         <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-xl font-extrabold text-white ${completed ? "bg-fish-success" : unlocked ? "bg-fish-primary" : "bg-slate-300"}`}>
           {completed ? <Check size={25} aria-label="Пройдено" /> : unlocked ? lesson.order : <Lock size={23} aria-label="Закрито" />}
         </div>
@@ -92,7 +92,7 @@ function LessonCard({ lesson }: { lesson: Lesson }) {
       <div className="mb-3 inline-flex w-fit rounded-full bg-fish-light px-3 py-1 text-sm font-extrabold text-fish-dark">
         {lesson.category}
       </div>
-      <h3 className="text-xl font-extrabold leading-tight text-fish-text">{lesson.title}</h3>
+      <h3 className="text-lg font-extrabold leading-tight text-fish-text sm:text-xl">{lesson.title}</h3>
       <p className="mt-2 flex-1 text-sm font-semibold leading-relaxed text-fish-muted">{lesson.description}</p>
       <div className="mt-4 flex items-center gap-2 font-extrabold text-fish-dark">
         {unlocked ? <PlayCircle size={18} aria-hidden /> : <Lock size={18} aria-hidden />}

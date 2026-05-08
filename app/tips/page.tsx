@@ -36,25 +36,25 @@ const sections = [
 export default function TipsPage() {
   return (
     <div className="desktop-wrap">
-      <div className="mb-7 flex items-end justify-between">
+      <div className="mb-5 flex flex-col gap-3 sm:mb-7 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-extrabold text-fish-dark">Бібліотека безпеки</p>
-          <h1 className="text-5xl font-extrabold text-fish-text">Практичні поради</h1>
+          <h1 className="text-3xl font-extrabold text-fish-text sm:text-5xl">Практичні поради</h1>
         </div>
-        <div className="rounded-3xl border border-fish-border bg-white px-5 py-4 font-bold text-fish-muted">
+        <div className="rounded-2xl border border-fish-border bg-white px-4 py-3 font-bold text-fish-muted sm:rounded-3xl sm:px-5 sm:py-4">
           Без жаргону. Тільки звички, які працюють.
         </div>
       </div>
-      <section className="grid grid-cols-3 gap-5">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
         {sections.map((section) => {
           const Icon = section.icon;
           return (
-            <article key={section.title} className="fish-card min-h-[260px] p-6 transition hover:-translate-y-1 hover:shadow-soft">
-              <div className="mb-5 flex items-center gap-3">
+            <article key={section.title} className="fish-card p-4 transition sm:p-6 lg:min-h-[260px] lg:hover:-translate-y-1 lg:hover:shadow-soft">
+              <div className="mb-4 flex items-center gap-3 sm:mb-5">
                 <div className="grid h-12 w-12 place-items-center rounded-2xl bg-fish-light text-fish-dark">
                   <Icon size={24} aria-hidden />
                 </div>
-                <h2 className="text-2xl font-extrabold text-fish-text">{section.title}</h2>
+                <h2 className="text-xl font-extrabold text-fish-text sm:text-2xl">{section.title}</h2>
               </div>
               <ul className="space-y-3">
                 {section.tips.map((tip) => (
