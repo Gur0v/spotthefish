@@ -7,12 +7,41 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 export const runtime = "nodejs";
 
 export async function POST() {
+  let createdAccountId: string | null = null;
+
   try {
-    const supabase = getSupabaseAdmin();
-    const session = await getAccessSession();
+    let supabase: ReturnType<typeof getSupabaseAdmin>;
+    try {
+      supabase = getSupabaseAdmin();
+    } catch (error) {
+      console.error("Access code create failed during Supabase config.", error);
+      return createAccessError("CONFIG");
+    }
+
+    let session: Awaited<ReturnType<typeof getAccessSession>>;
+    try {
+      session = await getAccessSession();
+    } catch (error) {
+      console.error("Access code create failed during session setup.", error);
+      return createAccessError("SESSION");
+    }
+
     const code = generateAccessCode();
-    const codeLookupHash = createLookupHash(code);
-    const codeSecretHash = await hashAccessCodeSecret(code);
+    let codeLookupHash: string;
+    try {
+      codeLookupHash = createLookupHash(code);
+    } catch (error) {
+      console.error("Access code create failed during lookup hash setup.", error);
+      return createAccessError("LOOKUP_SECRET");
+    }
+
+    let codeSecretHash: string;
+    try {
+      codeSecretHash = await hashAccessCodeSecret(code);
+    } catch (error) {
+      console.error("Access code create failed during secret hashing.", error);
+      return createAccessError("SECRET_HASH");
+    }
 
     const { data: account, error: accountError } = await supabase
       .from("access_accounts")
@@ -26,8 +55,10 @@ export async function POST() {
 
     if (accountError || !account) {
       console.error("Failed to insert access account.", accountError);
-      return NextResponse.json({ error: "Не вдалося створити код доступу" }, { status: 500 });
+      return createAccessError("ACCOUNT_INSERT");
     }
+
+    createdAccountId = account.id;
 
     const { error: progressError } = await supabase
       .from("account_progress")
@@ -35,15 +66,40 @@ export async function POST() {
 
     if (progressError) {
       console.error("Failed to insert account progress.", progressError);
-      return NextResponse.json({ error: "Не вдалося створити код доступу" }, { status: 500 });
+      await cleanupAccessAccount(supabase, account.id);
+      return createAccessError("PROGRESS_INSERT");
     }
 
     session.accountId = account.id;
-    await session.save();
+    try {
+      await session.save();
+    } catch (error) {
+      console.error("Access code create failed while saving session.", error);
+      await cleanupAccessAccount(supabase, account.id);
+      return createAccessError("SESSION_SAVE");
+    }
 
     return NextResponse.json({ accessCode: formatAccessCode(code) });
   } catch (error) {
     console.error("Failed to create access code.", error);
-    return NextResponse.json({ error: "Не вдалося створити код доступу" }, { status: 500 });
+    return createAccessError(createdAccountId ? "UNKNOWN_AFTER_ACCOUNT" : "UNKNOWN");
+  }
+}
+
+function createAccessError(debugCode: string) {
+  return NextResponse.json(
+    { error: "Не вдалося створити код доступу", debugCode },
+    { status: 500 },
+  );
+}
+
+async function cleanupAccessAccount(supabase: ReturnType<typeof getSupabaseAdmin>, accountId: string) {
+  const { error } = await supabase
+    .from("access_accounts")
+    .delete()
+    .eq("id", accountId);
+
+  if (error) {
+    console.error("Failed to clean up incomplete access account.", error);
   }
 }
