@@ -2,100 +2,72 @@
 
 [Українська версія](./README.uk.md)
 
-Desktop-only Ukrainian anti-phishing learning game.
-
-Built with Next.js, React, TypeScript, Tailwind CSS, static JSON lesson data, and `localStorage` progress.
-
-No email accounts. No passwords. No payments. No leaderboards. No personal data collection.
-
-By default, the app works fully locally through `localStorage`. Optional Supabase-backed access-code sync can be enabled with environment variables.
-
-## What it does
-
-Spot the Fish teaches users how to recognize online scams through short interactive lessons.
-
-The target audience is non-technical Ukrainian users, especially adults and moms.
+Spot the Fish is a desktop-first Ukrainian anti-phishing learning game that also works on phones. It teaches people to recognize online scams through short, friendly lessons with practical examples.
 
 The mascot is **Фішко**, a blue fish detective.
 
-## Features
+## Highlights
 
-- landing page
-- lesson map
-- lesson intro pages
-- interactive lesson pages
-- lesson completion pages
-- safety tips library
-- local settings page
-- local-only progress saving
-- optional 16-digit access-code progress sync
-- randomized Fishko mascot variants
-- Ukrainian educational copy
+- 16 lessons across 4 modules
+- 238 Ukrainian questions
+- Desktop-first responsive UI
+- Local progress through `localStorage`
+- Optional private access-code sync
+- No email, usernames, passwords, payments, profiles, or leaderboards
 
 ## Lessons
 
-The game has:
-
-- 16 lessons
-- 4 modules
-- 238 total questions
-
 Modules:
 
-- Підозрілі повідомлення
-- Посилання і сайти
-- Популярні сервіси
-- Безпечні дії
+| # | Module |
+|---|--------|
+| 1 | Підозрілі повідомлення |
+| 2 | Посилання і сайти |
+| 3 | Популярні сервіси |
+| 4 | Безпечні дії |
 
-Covered topics include:
+Covered topics include fake support, SMS codes, suspicious links, fake websites, QR payment traps, OLX scams, Telegram scams, Viber scams, delivery scams, banking traps, family money requests, and safe verification behavior.
 
-- fake support
-- SMS codes
-- giveaways
-- suspicious links
-- fake websites
-- QR payments
-- fake login pages
-- OLX scams
-- Telegram scams
-- Viber scams
-- delivery scams
-- banking traps
-- family money requests
-- safe verification behavior
+## Gameplay
 
-## Game types
+Question types:
 
 - click suspicious message parts
-- choose real/fake message cards
+- choose the real or fake message
 - pick the safest action
 - identify safe or suspicious links
 
-## Progress
+Completing a lesson unlocks the next one. Replaying a lesson can improve the saved score.
 
-Progress is stored in `localStorage` by default.
+## Progress And Privacy
 
-Tracked data includes:
-
-- completed lessons
-- unlocked lessons
-- scores
-- stars
-- streak
-- text size
-- sound setting
-- language setting
-
-Completing a lesson unlocks the next one.  
-Replaying a lesson can improve the saved score.
-
-Settings include a reset confirmation.
-
-There is also a hidden easter egg: clicking `Українська` 20 times unlocks all lessons.
+By default, progress is saved only in the browser via `localStorage`.
 
 Optional sync uses a 16-digit numeric access code. It does not use Supabase Auth, email, usernames, or passwords. Supabase is used only as Postgres storage through server-only route handlers.
 
-To enable sync, provide:
+Stored sync data is limited to progress and settings:
+
+- completed and unlocked lessons
+- scores, stars, and streak
+- language, text size, and sound setting
+
+Raw access codes are never stored. The database stores an HMAC lookup hash and a secret hash for verification.
+
+## Tech Stack
+
+- Next.js App Router
+- React
+- TypeScript
+- Tailwind CSS
+- Bun
+- static JSON lesson data
+- optional Supabase Postgres sync
+
+## Environment
+
+The app works without Supabase env vars in localStorage-only mode.
+
+Access-code sync needs:
 
 ```text
 NEXT_PUBLIC_SUPABASE_URL=
@@ -104,59 +76,44 @@ ACCOUNT_LOOKUP_SECRET=
 SESSION_PASSWORD=
 ```
 
-These are needed only for access-code sync. The game still works without them in localStorage-only mode. Never commit `.env.local` or real secrets.
+Never commit `.env.local` or real secrets.
 
-## Tech stack
-
-- Next.js
-- React
-- TypeScript
-- Tailwind CSS
-- Bun
-- localStorage
-- optional Supabase Postgres sync
-
-## Run locally
+## Run Locally
 
 ```bash
 bun install
 bun run dev
-````
-
-Open:
-
-```text
-http://localhost:3000
 ```
 
-## Production build
+Then open `http://localhost:3000`.
+
+## Build
 
 ```bash
 bun run build
 bunx next start -H 0.0.0.0 -p 3000
 ```
 
-## Local network
+## Access-Code Smoke Test
 
-To expose the site on your local network:
+Run this against a started server with sync env vars configured:
+
+```bash
+bun run smoke:access http://localhost:3000
+```
+
+It tests create, session check, save progress, load progress, logout, login, reload progress, and delete access account.
+
+## Local Network
 
 ```bash
 bunx next start -H 0.0.0.0 -p 3000
-```
-
-Find your LAN IP:
-
-```bash
 ip a
 ```
 
-Then open from another device on the same network:
+Then visit `http://YOUR_LOCAL_IP:3000` from another device on the same network.
 
-```text
-http://YOUR_LOCAL_IP:3000
-```
-
-## Project structure
+## Project Structure
 
 ```text
 app/          Next.js routes
@@ -167,18 +124,6 @@ lib/          helper logic
 scripts/      utility scripts
 ```
 
-## Development note
-
-This project was developed with agentic coding tools. Expect bugs, rough edges, and occasional questionable decisions. Review changes before trusting them.
-
-## Privacy
-
-There are no email/password user accounts.
-
-Progress is saved in the browser through `localStorage`. Clearing browser/site data removes progress.
-
-If optional access-code sync is configured, progress can also be saved to Supabase under a random 16-digit code. Raw access codes are not stored.
-
 ## License
 
-BSD 3-Clause License. See [LICENSE](./LICENSE).
+BSD 3-Clause. See [LICENSE](./LICENSE).

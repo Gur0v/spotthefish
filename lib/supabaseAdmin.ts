@@ -2,6 +2,17 @@ import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
 
+const requiredSupabaseAdminEnvNames = [
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "SUPABASE_SERVICE_ROLE_KEY",
+] as const;
+
+export type SupabaseAdminEnvName = (typeof requiredSupabaseAdminEnvNames)[number];
+
+export function getMissingSupabaseAdminEnvNames(): SupabaseAdminEnvName[] {
+  return requiredSupabaseAdminEnvNames.filter((name) => !process.env[name]);
+}
+
 function requireEnv(name: string) {
   const value = process.env[name];
   if (!value) {
@@ -11,6 +22,11 @@ function requireEnv(name: string) {
 }
 
 export function getSupabaseAdmin() {
+  const missingEnvNames = getMissingSupabaseAdminEnvNames();
+  if (missingEnvNames.length) {
+    throw new Error(`Missing required Supabase admin environment variables: ${missingEnvNames.join(", ")}`);
+  }
+
   const supabaseUrl = requireEnv("NEXT_PUBLIC_SUPABASE_URL");
   const serviceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 

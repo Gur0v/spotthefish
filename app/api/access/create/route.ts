@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createLookupHash, formatAccessCode, generateAccessCode } from "@/lib/accessCode";
 import { hashAccessCodeSecret } from "@/lib/codeSecret";
 import { getAccessSession } from "@/lib/session";
-import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { getMissingSupabaseAdminEnvNames, getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 export const runtime = "nodejs";
 
@@ -12,10 +12,16 @@ export async function POST() {
   try {
     let supabase: ReturnType<typeof getSupabaseAdmin>;
     try {
+      const missingEnvNames = getMissingSupabaseAdminEnvNames();
+      if (missingEnvNames.length) {
+        console.error("Access code create missing Supabase env vars.", missingEnvNames);
+        return createAccessError();
+      }
+
       supabase = getSupabaseAdmin();
     } catch (error) {
       console.error("Access code create failed during Supabase config.", error);
-      return createAccessError("CONFIG");
+      return createAccessError();
     }
 
     let session: Awaited<ReturnType<typeof getAccessSession>>;
@@ -23,7 +29,7 @@ export async function POST() {
       session = await getAccessSession();
     } catch (error) {
       console.error("Access code create failed during session setup.", error);
-      return createAccessError("SESSION");
+      return createAccessError();
     }
 
     const code = generateAccessCode();
@@ -32,7 +38,7 @@ export async function POST() {
       codeLookupHash = createLookupHash(code);
     } catch (error) {
       console.error("Access code create failed during lookup hash setup.", error);
-      return createAccessError("LOOKUP_SECRET");
+      return createAccessError();
     }
 
     let codeSecretHash: string;
@@ -40,7 +46,7 @@ export async function POST() {
       codeSecretHash = await hashAccessCodeSecret(code);
     } catch (error) {
       console.error("Access code create failed during secret hashing.", error);
-      return createAccessError("SECRET_HASH");
+      return createAccessError();
     }
 
     const { data: account, error: accountError } = await supabase
@@ -55,7 +61,7 @@ export async function POST() {
 
     if (accountError || !account) {
       console.error("Failed to insert access account.", accountError);
-      return createAccessError("ACCOUNT_INSERT");
+      return createAccessError();
     }
 
     createdAccountId = account.id;
@@ -67,7 +73,7 @@ export async function POST() {
     if (progressError) {
       console.error("Failed to insert account progress.", progressError);
       await cleanupAccessAccount(supabase, account.id);
-      return createAccessError("PROGRESS_INSERT");
+      return createAccessError();
     }
 
     session.accountId = account.id;
@@ -76,21 +82,18 @@ export async function POST() {
     } catch (error) {
       console.error("Access code create failed while saving session.", error);
       await cleanupAccessAccount(supabase, account.id);
-      return createAccessError("SESSION_SAVE");
+      return createAccessError();
     }
 
     return NextResponse.json({ accessCode: formatAccessCode(code) });
   } catch (error) {
-    console.error("Failed to create access code.", error);
-    return createAccessError(createdAccountId ? "UNKNOWN_AFTER_ACCOUNT" : "UNKNOWN");
+    console.error(createdAccountId ? "Failed to create access code after account insert." : "Failed to create access code.", error);
+    return createAccessError();
   }
 }
 
-function createAccessError(debugCode: string) {
-  return NextResponse.json(
-    { error: "Не вдалося створити код доступу", debugCode },
-    { status: 500 },
-  );
+function createAccessError() {
+  return NextResponse.json({ error: "Не вдалося створити код доступу" }, { status: 500 });
 }
 
 async function cleanupAccessAccount(supabase: ReturnType<typeof getSupabaseAdmin>, accountId: string) {
